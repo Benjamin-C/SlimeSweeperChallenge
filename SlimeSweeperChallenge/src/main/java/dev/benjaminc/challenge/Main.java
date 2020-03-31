@@ -28,8 +28,10 @@ public class Main {
 	
 	private static List<SlimeStatistic> stats;
 	
+	private static Logger mainLogger;
+	
 	public static void main(String args[]) {
-		Logger mainLogger = new Logger(false, "");
+		mainLogger = new Logger(false, "");
 		mainLogger.start();
 		
 		scan = new Scanner(System.in);
@@ -47,7 +49,11 @@ public class Main {
 			System.out.println("Using default robot");
 			r = new DefaultRobot();
 		}
-			
+		
+		testRobot(r);
+	}
+	
+	public static void testRobot(Robot r) {
 		System.out.println("Press enter to start");
 		scan.hasNextLine();
 		
@@ -56,6 +62,8 @@ public class Main {
 		mainLogger.pause();
 		
 		for(int run = 0; run < runCount; run++) {
+			r = resetRobot(r);
+			
 			// Play the game
 			if(r != null) {
 				

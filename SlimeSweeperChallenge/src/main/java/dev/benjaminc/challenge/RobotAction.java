@@ -10,6 +10,7 @@ public class RobotAction {
 	private int x;
 	private int y;
 	private RobotActionTypes type;
+	private char userchar;
 
 	/**
 	 * Makes a new {@link RobotAction}
@@ -18,11 +19,23 @@ public class RobotAction {
 	 * @param type	the {@link RobotActionTypes} type of action
 	 */
 	public RobotAction(int x, int y, RobotActionTypes type) {
+		this(x, y, type, (char) 0x00);
+	}
+	
+	/**
+	 * Makes a new {@link RobotAction}
+	 * @param x		the int x location
+	 * @param y		the int y location
+	 * @param type	the {@link RobotActionTypes} type of action
+	 */
+	public RobotAction(int x, int y, RobotActionTypes type, char userchar) {
 		super();
 		this.x = x;
 		this.y = y;
 		this.type = type;
+		this.userchar = userchar;
 	}
+	
 	
 	/**
 	 * Gets the x location of the {@link RobotAction}
@@ -65,5 +78,22 @@ public class RobotAction {
 	 */
 	public void setType(RobotActionTypes type) {
 		this.type = type;
+	}
+	
+	public char getUserchar() {
+		return userchar;
+	}
+
+	public void setUserchar(char userchar) {
+		this.userchar = userchar;
+	}
+
+	@Override
+	public String toString() {
+		if(userchar != 0) {
+			return type + "[" + userchar + "](" + x + "," + y + ")";
+		} else {
+			return type + "(" + x + "," + y + ")";
+		}
 	}
 }

@@ -23,10 +23,12 @@ public class SlimeSweeper {
 	/** The int width of the gameboard */
 	private GameSpace[][] spaces;
 	
-	/** The boolean of is dead */
-	private boolean isDead;
+	/** The int of slimes stepped on */
+	private int steppedSlimes;
 	/** The boolean of is won */
-	private boolean isWon;
+	private boolean isDone;
+	/** the boolean of if it has opened space */
+	private boolean didOpenSpace;
 	
 	/**
 	 * Creates a new SlimeSweeper. Use a number <=0 to use default values
@@ -46,6 +48,8 @@ public class SlimeSweeper {
 		}
 		
 		spaces = new GameSpace[width][height];
+		
+		didOpenSpace = false;
 		
 		slimeCount = (int) Math.max((int) (width*height*slimePercent), 1);
 		slimeMarkedCount = 0;
@@ -95,22 +99,18 @@ public class SlimeSweeper {
 	 * @param y	the int y location
 	 */
 	public void markSpace(int x, int y) {
-		if(!isDead) {
-			if(x < width && x >= 0 && y < height && y >= 0) {
-				if(!spaces[x][y].isRevealed()) {
-					if(spaces[x][y].isMarked()) {
-						spaces[x][y].setMakred(false);
-						slimeMarkedCount--;
-					} else {
-						spaces[x][y].setMakred(true);
-						slimeMarkedCount++;
-					}
+		if(x < width && x >= 0 && y < height && y >= 0) {
+			if(!spaces[x][y].isRevealed()) {
+				if(spaces[x][y].isMarked()) {
+					spaces[x][y].setMakred(false);
+					slimeMarkedCount--;
+				} else {
+					spaces[x][y].setMakred(true);
+					slimeMarkedCount++;
 				}
-			} else {
-				System.out.println("Out of bounds");
 			}
 		} else {
-			System.out.println("You can't do that, you're dead");
+			System.out.println("Out of bounds");
 		}
 	}
 	
@@ -120,52 +120,44 @@ public class SlimeSweeper {
 	 * @param y	the int y location
 	 */
 	public void openSpace(int x, int y) {
-		if(!isDead) {
-			if(x < width && x >= 0 && y < height && y >= 0) {
-				spaces[x][y].setRevealed(true);
-				if(spaces[x][y].getNearbySlimes() == 0) {
-					// Open nearby spaces if the selected space is not near any slimes
-					for(int tx = (int) Math.min(Math.max(x-1, 0), width-1); tx <= (int) Math.min(Math.max(x+1, 0), width-1); tx++) {
-						for(int ty = (int) Math.min(Math.max(y-1, 0), height-1); ty <= (int) Math.min(Math.max(y+1, 0), height-1); ty++) {
-							if(!spaces[tx][ty].isRevealed()) {
-								openSpace(tx, ty);
-							}
+		if(x < width && x >= 0 && y < height && y >= 0) {
+			spaces[x][y].setRevealed(true);
+			if(spaces[x][y].getNearbySlimes() == 0) {
+				// Open nearby spaces if the selected space is not near any slimes
+				didOpenSpace = true;
+				for(int tx = (int) Math.min(Math.max(x-1, 0), width-1); tx <= (int) Math.min(Math.max(x+1, 0), width-1); tx++) {
+					for(int ty = (int) Math.min(Math.max(y-1, 0), height-1); ty <= (int) Math.min(Math.max(y+1, 0), height-1); ty++) {
+						if(!spaces[tx][ty].isRevealed()) {
+							openSpace(tx, ty);
 						}
 					}
-				} else {
-					spaces[x][y].setRevealed(true);
-				}
-				
-				if(spaces[x][y].isSlimey()) {
-					isDead = true;
-					System.out.println("You lost");
 				}
 			} else {
-				System.out.println("Out of bounds");
+				spaces[x][y].setRevealed(true);
+			}
+			
+			if(spaces[x][y].isSlimey()) {
+				steppedSlimes++;
+				System.out.println("You stepped in a slime");
 			}
 		} else {
-			System.out.println("You can't do that, you're dead");
+			System.out.println("Out of bounds");
 		}
 	}
-
-	/**
-	 * Gets weather or not you are dead
-	 * @return boolean are you dead
-	 */
-	public boolean isDead() {
-		return isDead;
+	
+	public boolean didOpenSpace() {
+		return didOpenSpace;
 	}
 	
+	public int getSteppedSlimes() {
+		return steppedSlimes;
+	}
 	/**
 	 * Determines if the game has been won
 	 * @return	boolean did you win
 	 */
-	public boolean isWon() {
-		if(!isWon) {
-			if(isDead) {
-				return false;
-			}
-			
+	public boolean isDone() {
+		if(!isDone) {
 			for(int x = 0; x < width; x++) {
 				for(int y = 0; y < height; y++) {
 					if(!(spaces[x][y].isRevealed() || spaces[x][y].isSlimey())) {
@@ -173,7 +165,7 @@ public class SlimeSweeper {
 					}
 				}
 			}
-			isWon = true;
+			isDone = true;
 		}
 		return true;
 	}
@@ -200,7 +192,7 @@ public class SlimeSweeper {
 			}
 			row += nm;
 			for(int x = 0; x < width; x++) {
-				row += " " + spaces[x][y].getChar(isDead || isWon());
+				row += " " + spaces[x][y].getChar(isDone());
 			}
 			System.out.println(row);
 		}
@@ -214,7 +206,7 @@ public class SlimeSweeper {
 		int[][] board = new int[width][height];
 		for(int x = 0; x < width; x++) {
 			for(int y = 0; y < height; y++) {
-				board[x][y] = spaces[x][y].getInt(isDead || isWon());
+				board[x][y] = spaces[x][y].getInt(isDone());
 			}
 		}
 		return board;

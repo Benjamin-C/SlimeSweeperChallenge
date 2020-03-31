@@ -15,6 +15,7 @@ public interface Robot {
 	 * Called each time the robot is asked to make a move<br/>
 	 * Gets a representation of the space as an int.
 	 * <li>If revealed, returns the number of nearby slimes</li>
+	 * <li>If slime was discovered, returns 10</li>
 	 * <li>If marked, returns 9</li>
 	 * <li>If hidden, returns -1</li>
 	 * @param board	the 2d int array representation of the gameboard
@@ -26,11 +27,12 @@ public interface Robot {
 	 * The final gameboard is also passed in
 	 * <li>If revealed, returns the number of nearby slimes</li>
 	 * <li>If marked, returns 9</li>
+	 * <li>If slime was discovered, returns 10</li>
 	 * <li>If hidden, returns -1</li>
 	 * <li>If slimy, returns -2</li>
-	 * @param won	boolean if you won the game or not
+	 * @param i	boolean if you won the game or not
 	 * @param board	the 2d int array representation of the gameboard
 	 */
-	public void cleanup(boolean won, int[][] board);
+	public void cleanup(int i, int[][] board);
 
 }

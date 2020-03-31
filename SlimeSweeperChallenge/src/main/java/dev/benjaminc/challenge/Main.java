@@ -14,6 +14,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import dev.benjaminc.slimesweeper.SlimeSweeper;
+import util.Logger;
 
 public class Main {
 	
@@ -23,8 +24,14 @@ public class Main {
 	private static int width = 8;
 	private static int height = 8;
 	private static float slimePercent = 0.05f;
+	private static int runCount = 2;
+	
+	private static List<SlimeStatistic> stats;
 	
 	public static void main(String args[]) {
+		Logger mainLogger = new Logger(false, "");
+		mainLogger.start();
+		
 		scan = new Scanner(System.in);
 		
 		Robot r = null;
@@ -44,57 +51,78 @@ public class Main {
 		System.out.println("Press enter to start");
 		scan.hasNextLine();
 		
-		SlimeSweeper ss = new SlimeSweeper(width, height, slimePercent);
+		stats = new ArrayList<SlimeStatistic>();
 		
-		// Play the game
-		if(r != null) {
-			int nulls = 0;
-			int moves = 0;
-			try {
-				r.init();
-			} catch(Exception e) {
-				System.out.println("Your robot generated an exception during init.");
-				e.printStackTrace();
-				exit(1);
-			}
-			
-			do {
+		mainLogger.pause();
+		
+		for(int run = 0; run < runCount; run++) {
+			// Play the game
+			if(r != null) {
+				
+				SlimeSweeper ss = new SlimeSweeper(width, height, slimePercent);
+				List<RobotAction> actions = new ArrayList<RobotAction>();
+				
+				Logger runLogger = new Logger(false, "r" + run);
+				runLogger.start();
+				
+				int nulls = 0;
+				int moves = 0;
 				try {
-					RobotAction ro = r.makeMove(ss.getGameBoard());
-					moves++;
-					if(ro == null) {
-						nulls++;
-						if(nulls >= 8) {
-							throw new NullPointerException("The robot returned null " + nulls + " times in a row.");
-						}
-					} else {
-						nulls = 0;
-						ss.runRobotActoin(ro);
-					}
+					r.init();
 				} catch(Exception e) {
-					System.out.println("Your robot generated an exception during its turn.");
+					System.out.println("Your robot generated an exception during init.");
 					e.printStackTrace();
-					exit(1);
+					stats.add(new SlimeStatistic(ss, actions, e));
+					continue;
 				}
-				ss.printBoard();
-			} while(!ss.isDead() && !ss.isWon());
-			if(ss.isDead()) {
-				System.out.println("You died after " + moves + " moves");
-			} else if(ss.isWon()) {
-				System.out.println("You won after " + moves + " moves");
-			} else {
-				System.out.println("Something goofed");
+				
+				do {
+					try {
+						RobotAction ro = r.makeMove(ss.getGameBoard());
+						actions.add(ro);
+						moves++;
+						if(ro == null) {
+							nulls++;
+							if(nulls >= 8) {
+								throw new NullPointerException("The robot returned null " + nulls + " times in a row.");
+							}
+						} else {
+							nulls = 0;
+							ss.runRobotActoin(ro);
+						}
+					} catch(Exception e) {
+						System.out.println("Your robot generated an exception during its turn.");
+						e.printStackTrace();
+						stats.add(new SlimeStatistic(ss, actions, e));
+						continue;
+					}
+					ss.printBoard();
+				} while(!ss.isDone());
+				
+				System.out.println("You finished after " + moves + " moves");
+				
+				try {
+					r.cleanup(ss.getSteppedSlimes(), ss.getGameBoard());
+				} catch(Exception e) {
+					System.out.println("Your robot generated an exception during cleanup.");
+					e.printStackTrace();
+					stats.add(new SlimeStatistic(ss, actions, e));
+					continue;
+				}
+				stats.add(new SlimeStatistic(ss, actions, null));
+				
+				runLogger.stop();
 			}
-			
-			try {
-				r.cleanup(ss.isWon(), ss.getGameBoard());
-			} catch(Exception e) {
-				System.out.println("Your robot generated an exception during cleanup.");
-				e.printStackTrace();
-				exit(1);
-			}
-			
 		}
+		
+		mainLogger.resume();
+		
+		for(SlimeStatistic s : stats) {
+			s.print();
+		}
+		
+		mainLogger.stop();
+		
 		exit(0);
 	}
 	
@@ -199,5 +227,22 @@ public class Main {
 			}
 		}
 		return r;
+	}
+	
+	public static Robot resetRobot(Robot robotToBeReset) {
+		Object newobj = null;
+		
+		try {
+			Constructor<?> ctor = robotToBeReset.getClass().getConstructor();
+			newobj = ctor.newInstance();
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException err) {
+			err.printStackTrace();
+		}
+		
+		if(newobj != null && newobj instanceof Robot) {
+			return (Robot) newobj;
+		}
+		
+		return null;
 	}
 }

@@ -56,7 +56,11 @@ public class GameSpace {
 				if(isMarked) {
 					return "$";
 				} else {
-					return "X";
+					if(isRevealed) {
+						return "S";
+					} else {
+						return "X";
+					}
 				}
 			}
 			if(nearbySlimes == 0) {
@@ -75,6 +79,7 @@ public class GameSpace {
 	/**
 	 * Gets a representation of the space as an int.<br/>
 	 * <li>If revealed, returns the number of nearby slimes</li>
+	 * <li>If slime was discovered, returns 10</li>
 	 * <li>If marked, returns 9</li>
 	 * <li>If hidden, returns -1</li>
 	 * @return the number representation of the space
@@ -86,6 +91,7 @@ public class GameSpace {
 	 * Gets a representation of the space as an int.<br/>
 	 * <li>If revealed, returns the number of nearby slimes</li>
 	 * <li>If marked, returns 9</li>
+	 * <li>If slime was discovered, returns 10</li>
 	 * <li>If hidden, returns -1</li>
 	 * Additional outputs if showAll is true
 	 * <li>If slimy, returns -2</li>
@@ -99,7 +105,11 @@ public class GameSpace {
 				if(isMarked) {
 					return -3;
 				} else {
-					return -2;
+					if(isRevealed) {
+						return 10;
+					} else {
+						return -2;
+					}
 				}
 			}
 			return nearbySlimes;

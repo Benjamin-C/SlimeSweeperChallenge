@@ -47,7 +47,7 @@ public class DefaultRobot implements Robot {
 	}
 
 	@Override
-	public void cleanup(boolean won, int[][] board) {
+	public void cleanup(int won, int[][] board) {
 		
 	}
 }
